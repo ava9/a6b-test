@@ -19,6 +19,9 @@ public class MyManager extends game.Manager {
 
 	@SuppressWarnings("unchecked")
 	
+	boolean preprocessingDone = false;
+	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void run() {
 		int count = 0;
@@ -71,11 +74,18 @@ public class MyManager extends game.Manager {
 			}
 		}
 		
+		preprocessingDone = true;
+		
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
 	public void truckNotification(Truck truck, Notification notification) {
+		
+		//Ensure preprocessing -> run() is done
+		if(!preprocessingDone){
+			return;
+		}
 		
 		//Current truck status
 		switch(notification){
