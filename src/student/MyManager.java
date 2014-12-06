@@ -5,6 +5,8 @@ import game.Parcel;
 import game.Board;
 import game.Edge;
 import game.Node;
+
+import java.awt.Color;
 import java.util.LinkedList;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,16 +53,16 @@ public class MyManager extends game.Manager {
 			
 			LinkedList<Parcel> list = (LinkedList<Parcel>)truck.getUserData();
 			
+			
 			if (list != null){
 
-				Node node = list.get(0).getLocation();
-				LinkedList<Node> bestPath = Dijkstra(truck.getLocation(), node);	
+				LinkedList<Node> bestPath = Dijkstra(truck.getLocation(), assignNextParcel(list, truck.getColor()).getLocation());	
 				
 				/**Debugging**/
 				if (bestPath.size() > 0){
 					System.out.println("Path: " + bestPath);
 				}
-				System.out.println("Parcel location: " + node + ", Dijkstra's destination: " + bestPath.get(bestPath.size() - 1));
+				System.out.println("Parcel location: " + assignNextParcel(list, truck.getColor()).getLocation() + ", Dijkstra's destination: " + bestPath.get(bestPath.size() - 1));
 				
 				//Ensure trucks pick up the parcel using the shortest path
 				if ((bestPath != null) && (bestPath.size() > 0)){
@@ -125,6 +127,7 @@ public class MyManager extends game.Manager {
 									System.out.println("PICK UP PARCEL");
 									synchronized(this){
 										
+										
 										//Truck has no parcel right now; pick up one
 										Parcel parcel = ((LinkedList<Parcel>)truck.getUserData()).get(0);
 										if (truck.getLocation().equals(parcel.getLocation())){
@@ -159,6 +162,42 @@ public class MyManager extends game.Manager {
 							break;
 		}
 	}
+
+	private Parcel assignNextParcel(LinkedList<Parcel> list, Color c) throws IndexOutOfBoundsException {
+		
+		Parcel p;
+		
+		//Throws if parcels is empty
+		if (list.size() == 0){
+			throw new IndexOutOfBoundsException();
+		}
+		
+		int i = 0;
+		
+		//Find a parcel of the same color
+		while (i < list.size() && list.get(i).getColor() != c) {
+			i++;
+		}
+		
+		//Only 1 truck can claim a parcel at a time
+		synchronized(list) {
+			
+			//There are no more parcels of the same color
+			if (i == list.size()) {
+				p = list.get(0);
+			}
+			
+			//We found a parcel of the same color.
+			else {
+				p = list.poll();
+			}
+		}
+
+		return p;
+		
+	}
+	
+	
 	
 	public synchronized void moveTruck(Truck truck, Node node){
 		if (truck.getLocation().equals(node)){
